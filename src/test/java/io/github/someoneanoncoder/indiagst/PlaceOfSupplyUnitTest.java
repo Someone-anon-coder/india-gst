@@ -63,6 +63,14 @@ class PlaceOfSupplyUnitTest {
   }
 
   @Test
+  @DisplayName("bill-to ship-to: the directing buyer's state is the place of supply")
+  void shouldUseBuyerState_whenBuyerDirectsDelivery() {
+    PlaceOfSupply place = PlaceOfSupply.forDirectedDelivery(StateCode.MAHARASHTRA, TN_BUYER);
+    assertThat(place.placeOfSupplyState()).isEqualTo(StateCode.TAMIL_NADU);
+    assertThat(place.supplyType()).isEqualTo(SupplyType.INTER_STATE);
+  }
+
+  @Test
   @DisplayName("an unregistered buyer without an address is treated as local")
   void shouldBeIntra_whenNothingElseKnown() {
     PlaceOfSupply place = PlaceOfSupply.resolve(StateCode.GOA, Optional.empty(), Optional.empty());

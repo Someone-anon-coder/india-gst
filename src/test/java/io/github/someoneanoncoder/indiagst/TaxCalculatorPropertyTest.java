@@ -75,8 +75,14 @@ class TaxCalculatorPropertyTest {
     TaxResult inter = TaxCalculator.calculate(INTER, mode, inputs);
     assertThat(intra.integratedTaxTotal()).isEqualTo(Money.ZERO);
     assertThat(inter.centralTaxTotal().plus(inter.stateTaxTotal())).isEqualTo(Money.ZERO);
-    assertThat(intra.taxableTotal()).isEqualTo(inter.taxableTotal());
     assertThat(intra.cessTotal()).isEqualTo(inter.cessTotal());
+    if (inclusive) {
+      assertThat(intra.grandTotal()).isEqualTo(inter.grandTotal());
+      assertThat(Math.abs(intra.taxableTotal().paise() - inter.taxableTotal().paise()))
+          .isLessThanOrEqualTo(inputs.size());
+    } else {
+      assertThat(intra.taxableTotal()).isEqualTo(inter.taxableTotal());
+    }
   }
 
   @Property
@@ -88,13 +94,23 @@ class TaxCalculatorPropertyTest {
   }
 
   @Property
-  void shouldDifferByAtMostOnePaise_whenInclusiveIntra(
-      @ForAll("lineLists") List<TaxLineInput> inputs) {
+  void shouldKeepHalvesEqual_whenInclusiveIntra(@ForAll("lineLists") List<TaxLineInput> inputs) {
     TaxResult result = TaxCalculator.calculate(INTRA, PricingMode.INCLUSIVE, inputs);
     for (TaxLine line : result.lines()) {
-      long gap = line.centralTax().paise() - line.stateTax().paise();
-      assertThat(gap).isBetween(0L, 1L);
+      assertThat(line.centralTax()).isEqualTo(line.stateTax());
     }
+  }
+
+  @Property
+  void shouldFollowRule35_whenInclusive(@ForAll("lines") TaxLineInput input) {
+    TaxResult result = TaxCalculator.calculate(INTER, PricingMode.INCLUSIVE, List.of(input));
+    BigDecimal divisor = BigDecimal.valueOf(100).add(input.gstRate()).add(input.cessRate());
+    long expected =
+        BigDecimal.valueOf(input.netAmount().paise())
+            .multiply(input.gstRate())
+            .divide(divisor, 0, RoundingMode.HALF_UP)
+            .longValueExact();
+    assertThat(result.integratedTaxTotal().paise()).isEqualTo(expected);
   }
 
   @Property

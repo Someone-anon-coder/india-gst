@@ -3,15 +3,17 @@
 # Status: DRAFT, awaiting owner review. Lines starting with '#' are the arithmetic worked out per line.
 # Provenance: inputs were chosen by hand to cover each rule. Expected figures were NOT produced by the
 # Java implementation; they were computed with a separate throwaway Decimal script and the key cases
-# re-checked by hand (case 01, 05, 31-34, 36, 37, 46). Review the cases flagged AMBIGUOUS/ASSUMPTION/UNVERIFIED.
+# re-checked by hand (case 01, 05, 31, 34, 37, 46, 50). Review the cases flagged AMBIGUOUS/ASSUMPTION/UNVERIFIED.
 #
 # Conventions (all documented on TaxCalculator): each line rounded half-up to paise on its own;
-# intra-State: each half = taxable x rate/2 rounded; inclusive: taxable = price x 100 / (100 + gst + cess)
-# rounded half-up, cess = taxable x cess rounded and capped at the tax part, the rest is GST, an odd
-# paisa goes to central tax.
+# exclusive intra-State: each half = taxable x rate/2 rounded. Inclusive (MRP): CGST Rules rule 35,
+# each head = price x head rate / (100 + sum of rates) rounded half-up (central = state), taxable
+# value = price minus the heads, so the line totals the price. Revised after two independent reviews
+# (the earlier "odd paisa to central tax" split gave unequal halves and was dropped).
 #
 # Record format (pipe separated):
 #   case|<no>|<title>   supplier|<state code>   delivery|<state code>   buyer|<GSTIN>   mode|EXCLUSIVE or INCLUSIVE
+#   directed|true   (buyer directed delivery to a third person: place of supply is the buyer's state)
 #   line|amount|discount|gst rate|cess rate
 #   expect-type|INTRA_STATE or INTER_STATE   expect-state-tax|SGST, UTGST or NOT_APPLICABLE
 #   expect-line|taxable|central|state|integrated|cess      (one per line, in order)
@@ -410,7 +412,8 @@ expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
 expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
 end
 
-case|29|Delivery state overrides the buyer GSTIN state (buyer in TN, delivery in MH)
+case|29|Delivery state overrides the buyer GSTIN state (buyer in TN, goods delivered to the buyer's own MH site)
+# AMBIGUOUS: this is section 10(1)(a) (movement ends in MH). If the buyer directed delivery to a third person it is section 10(1)(b): see the bill-to ship-to case
 supplier|27
 delivery|27
 buyer|33AAACC1206D1ZN
@@ -431,23 +434,23 @@ mode|INCLUSIVE
 line|118.00|0.00|18|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 118 x 100 / 118 = 100.000000 -> taxable 100.00; tax part 18.00; cess 0.00; GST 18.00
+# line 1: rule 35: 118 x 9% / 118% = 9.000000 -> 9.00 each; cess 0.00; taxable 118 - 18.00 - 0.00 = 100.00
 expect-line|100.00|9.00|9.00|0.00|0.00
 expect-summary|18|0|100.00|9.00|9.00|0.00|0.00
 expect-total|100.00|9.00|9.00|0.00|0.00|118.00
 end
 
-case|31|Inclusive, MRP 100.00 at 18%: odd paisa of GST goes to central tax
+case|31|Inclusive, MRP 100.00 at 18%: rule 35 gives 7.63 for each of central and state tax, taxable value is the remainder 84.74
 supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|18|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
-expect-line|84.75|7.63|7.62|0.00|0.00
-expect-summary|18|0|84.75|7.63|7.62|0.00|0.00
-expect-total|84.75|7.63|7.62|0.00|0.00|100.00
+# line 1: rule 35: 100 x 9% / 118% = 7.627119 -> 7.63 each; cess 0.00; taxable 100 - 15.26 - 0.00 = 84.74
+expect-line|84.74|7.63|7.63|0.00|0.00
+expect-summary|18|0|84.74|7.63|7.63|0.00|0.00
+expect-total|84.74|7.63|7.63|0.00|0.00|100.00
 end
 
 case|32|Inclusive, MRP 100.00 at 5%
@@ -457,7 +460,7 @@ mode|INCLUSIVE
 line|100.00|0.00|5|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 100 x 100 / 105 = 95.238095 -> taxable 95.24; tax part 4.76; cess 0.00; GST 4.76
+# line 1: rule 35: 100 x 2.5% / 105% = 2.380952 -> 2.38 each; cess 0.00; taxable 100 - 4.76 - 0.00 = 95.24
 expect-line|95.24|2.38|2.38|0.00|0.00
 expect-summary|5|0|95.24|2.38|2.38|0.00|0.00
 expect-total|95.24|2.38|2.38|0.00|0.00|100.00
@@ -470,23 +473,23 @@ mode|INCLUSIVE
 line|100.00|0.00|12|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 100 x 100 / 112 = 89.285714 -> taxable 89.29; tax part 10.71; cess 0.00; GST 10.71
-expect-line|89.29|5.36|5.35|0.00|0.00
-expect-summary|12|0|89.29|5.36|5.35|0.00|0.00
-expect-total|89.29|5.36|5.35|0.00|0.00|100.00
+# line 1: rule 35: 100 x 6% / 112% = 5.357143 -> 5.36 each; cess 0.00; taxable 100 - 10.72 - 0.00 = 89.28
+expect-line|89.28|5.36|5.36|0.00|0.00
+expect-summary|12|0|89.28|5.36|5.36|0.00|0.00
+expect-total|89.28|5.36|5.36|0.00|0.00|100.00
 end
 
-case|34|Inclusive, MRP 100.00 at 28%: taxable value 78.125 rounds half up
+case|34|Inclusive, MRP 100.00 at 28%: each half is 10.9375, rounds to 10.94
 supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|28|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 100 x 100 / 128 = 78.125000 -> taxable 78.13; tax part 21.87; cess 0.00; GST 21.87
-expect-line|78.13|10.94|10.93|0.00|0.00
-expect-summary|28|0|78.13|10.94|10.93|0.00|0.00
-expect-total|78.13|10.94|10.93|0.00|0.00|100.00
+# line 1: rule 35: 100 x 14% / 128% = 10.937500 -> 10.94 each; cess 0.00; taxable 100 - 21.88 - 0.00 = 78.12
+expect-line|78.12|10.94|10.94|0.00|0.00
+expect-summary|28|0|78.12|10.94|10.94|0.00|0.00
+expect-total|78.12|10.94|10.94|0.00|0.00|100.00
 end
 
 case|35|Inclusive, inter-State MRP 100.00 at 18%
@@ -496,7 +499,7 @@ mode|INCLUSIVE
 line|100.00|0.00|18|0
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
-# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
+# line 1: rule 35: 100 x 18% / 118% = 15.254237 -> 15.25; cess 0.00; taxable 100 - 15.25 - 0.00 = 84.75
 expect-line|84.75|0.00|0.00|15.25|0.00
 expect-summary|18|0|84.75|0.00|0.00|15.25|0.00
 expect-total|84.75|0.00|0.00|15.25|0.00|100.00
@@ -509,7 +512,7 @@ mode|INCLUSIVE
 line|500.00|50.00|18|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 450 x 100 / 118 = 381.355932 -> taxable 381.36; tax part 68.64; cess 0.00; GST 68.64
+# line 1: rule 35: 450 x 9% / 118% = 34.322034 -> 34.32 each; cess 0.00; taxable 450 - 68.64 - 0.00 = 381.36
 expect-line|381.36|34.32|34.32|0.00|0.00
 expect-summary|18|0|381.36|34.32|34.32|0.00|0.00
 expect-total|381.36|34.32|34.32|0.00|0.00|450.00
@@ -522,7 +525,7 @@ mode|INCLUSIVE
 line|1000.00|0.00|28|12
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 1000 x 100 / 140 = 714.285714 -> taxable 714.29; tax part 285.71; cess 85.71; GST 200.00
+# line 1: rule 35: 1000 x 14% / 140% = 100.000000 -> 100.00 each; cess 85.71; taxable 1000 - 200.00 - 85.71 = 714.29
 expect-line|714.29|100.00|100.00|0.00|85.71
 expect-summary|28|12|714.29|100.00|100.00|0.00|85.71
 expect-total|714.29|100.00|100.00|0.00|85.71|1000.00
@@ -535,21 +538,20 @@ mode|INCLUSIVE
 line|1050.00|0.00|0|5
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 1050 x 100 / 105 = 1000.000000 -> taxable 1000.00; tax part 50.00; cess 50.00; GST 0.00
+# line 1: rule 35: 1050 x 0% / 105% = 0.000000 -> 0.00 each; cess 50.00; taxable 1050 - 0.00 - 50.00 = 1000.00
 expect-line|1000.00|0.00|0.00|0.00|50.00
 expect-summary|0|5|1000.00|0.00|0.00|0.00|50.00
 expect-total|1000.00|0.00|0.00|0.00|50.00|1050.00
 end
 
-case|39|Inclusive, 10 paise with 5% cess: cess is capped at the tax part
-# CONVENTION: cess never exceeds amount minus taxable value
+case|39|Inclusive, 10 paise with 5% cess: cess rounds to nothing, taxable value stays 0.10
 supplier|27
 delivery|27
 mode|INCLUSIVE
 line|0.10|0.00|0|5
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 0.10 x 100 / 105 = 0.095238 -> taxable 0.10; tax part 0.00; cess 0.00; GST 0.00
+# line 1: rule 35: 0.10 x 0% / 105% = 0.000000 -> 0.00 each; cess 0.00; taxable 0.10 - 0.00 - 0.00 = 0.10
 expect-line|0.10|0.00|0.00|0.00|0.00
 expect-summary|0|5|0.10|0.00|0.00|0.00|0.00
 expect-total|0.10|0.00|0.00|0.00|0.00|0.10
@@ -564,9 +566,9 @@ line|105.00|0.00|5|0
 line|112.00|0.00|12|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 118 x 100 / 118 = 100.000000 -> taxable 100.00; tax part 18.00; cess 0.00; GST 18.00
-# line 2: 105 x 100 / 105 = 100.000000 -> taxable 100.00; tax part 5.00; cess 0.00; GST 5.00
-# line 3: 112 x 100 / 112 = 100.000000 -> taxable 100.00; tax part 12.00; cess 0.00; GST 12.00
+# line 1: rule 35: 118 x 9% / 118% = 9.000000 -> 9.00 each; cess 0.00; taxable 118 - 18.00 - 0.00 = 100.00
+# line 2: rule 35: 105 x 2.5% / 105% = 2.500000 -> 2.50 each; cess 0.00; taxable 105 - 5.00 - 0.00 = 100.00
+# line 3: rule 35: 112 x 6% / 112% = 6.000000 -> 6.00 each; cess 0.00; taxable 112 - 12.00 - 0.00 = 100.00
 expect-line|100.00|9.00|9.00|0.00|0.00
 expect-line|100.00|2.50|2.50|0.00|0.00
 expect-line|100.00|6.00|6.00|0.00|0.00
@@ -583,7 +585,7 @@ mode|INCLUSIVE
 line|250.00|0.00|0|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 250 x 100 / 100 = 250.000000 -> taxable 250.00; tax part 0.00; cess 0.00; GST 0.00
+# line 1: rule 35: 250 x 0% / 100% = 0.000000 -> 0.00 each; cess 0.00; taxable 250 - 0.00 - 0.00 = 250.00
 expect-line|250.00|0.00|0.00|0.00|0.00
 expect-summary|0|0|250.00|0.00|0.00|0.00|0.00
 expect-total|250.00|0.00|0.00|0.00|0.00|250.00
@@ -596,7 +598,7 @@ mode|INCLUSIVE
 line|0.01|0.00|18|0
 expect-type|INTRA_STATE
 expect-state-tax|SGST
-# line 1: 0.01 x 100 / 118 = 0.008475 -> taxable 0.01; tax part 0.00; cess 0.00; GST 0.00
+# line 1: rule 35: 0.01 x 9% / 118% = 0.000763 -> 0.00 each; cess 0.00; taxable 0.01 - 0.00 - 0.00 = 0.01
 expect-line|0.01|0.00|0.00|0.00|0.00
 expect-summary|18|0|0.01|0.00|0.00|0.00|0.00
 expect-total|0.01|0.00|0.00|0.00|0.00|0.01
@@ -689,7 +691,7 @@ expect-total|3205.91|283.66|283.66|0.00|0.00|3773.23
 roundoff|NEAREST_RUPEE|3773.00|-0.23
 end
 
-case|47|Twenty identical lines of 33.33 at 18%: tax is rounded per line (invoice-level rounding would give 119.99)
+case|47|Twenty identical lines of 33.33 at 18%: tax is rounded per line (rounding each half once on the invoice total would give 59.99 + 59.99 = 119.98)
 # AMBIGUOUS: line-level versus invoice-level rounding is not prescribed
 supplier|27
 delivery|27
@@ -761,25 +763,25 @@ mode|INCLUSIVE
 line|2000.00|200.00|28|12
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
-# line 1: 1800 x 100 / 140 = 1285.714286 -> taxable 1285.71; tax part 514.29; cess 154.29; GST 360.00
+# line 1: rule 35: 1800 x 28% / 140% = 360.000000 -> 360.00; cess 154.29; taxable 1800 - 360.00 - 154.29 = 1285.71
 expect-line|1285.71|0.00|0.00|360.00|154.29
 expect-summary|28|12|1285.71|0.00|0.00|360.00|154.29
 expect-total|1285.71|0.00|0.00|360.00|154.29|1800.00
 end
 
-case|50|Intra-State inclusive, two lines of the same rate give one summary row
+case|50|Bill-to ship-to: buyer in TN directs delivery to a third person in MH, so the place of supply is TN (inter-State)
+# Section 10(1)(b) IGST Act via forDirectedDelivery (secondary source); the caller decides that delivery is on the buyer's direction
 supplier|27
 delivery|27
-mode|INCLUSIVE
-line|100.00|0.00|18|0
-line|100.00|0.00|18|0
-expect-type|INTRA_STATE
-expect-state-tax|SGST
-# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
-# line 2: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
-expect-line|84.75|7.63|7.62|0.00|0.00
-expect-line|84.75|7.63|7.62|0.00|0.00
-expect-summary|18|0|169.50|15.26|15.24|0.00|0.00
-expect-total|169.50|15.26|15.24|0.00|0.00|200.00
+buyer|33AAACC1206D1ZN
+directed|true
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 18% = 180 -> 180.00
+expect-line|1000.00|0.00|0.00|180.00|0.00
+expect-summary|18|0|1000.00|0.00|0.00|180.00|0.00
+expect-total|1000.00|0.00|0.00|180.00|0.00|1180.00
 end
 

@@ -41,6 +41,7 @@ class InvoicesGoldenTest {
     String supplier;
     String delivery;
     String buyer;
+    boolean directed;
     String mode;
     final List<String[]> lines = new ArrayList<>();
     final List<String[]> expectedLines = new ArrayList<>();
@@ -82,6 +83,7 @@ class InvoicesGoldenTest {
       case "supplier" -> c.supplier = f[1];
       case "delivery" -> c.delivery = f[1];
       case "buyer" -> c.buyer = f[1];
+      case "directed" -> c.directed = Boolean.parseBoolean(f[1]);
       case "mode" -> c.mode = f[1];
       case "line" -> c.lines.add(f);
       case "expect-type" -> c.type = f[1];
@@ -103,7 +105,10 @@ class InvoicesGoldenTest {
     StateCode supplier = StateCode.fromCode(c.supplier).orElseThrow();
     Optional<StateCode> delivery = Optional.ofNullable(c.delivery).flatMap(StateCode::fromCode);
     Optional<Gstin> buyer = Optional.ofNullable(c.buyer).map(Gstin::parse);
-    PlaceOfSupply place = PlaceOfSupply.resolve(supplier, delivery, buyer);
+    PlaceOfSupply place =
+        c.directed
+            ? PlaceOfSupply.forDirectedDelivery(supplier, buyer.orElseThrow())
+            : PlaceOfSupply.resolve(supplier, delivery, buyer);
     List<TaxLineInput> inputs = new ArrayList<>();
     for (String[] l : c.lines) {
       inputs.add(

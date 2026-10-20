@@ -23,7 +23,8 @@ import java.util.Locale;
 
 /**
  * Reads the first worksheet of an {@code .xlsx} file. The header row is the first row that has a
- * cell mentioning "hsn" or "sac" (the code column) and a cell mentioning "description".
+ * cell mentioning "hsn" or "sac" (the code column) and a cell mentioning "description" (so
+ * "Description of Goods" works).
  *
  * <p><strong>Not verified against the official file:</strong> the layout of the GST portal's
  * HSN/SAC master could not be downloaded when this was written; tests use a synthetic workbook.
@@ -47,7 +48,7 @@ public final class HsnExcelLoader {
     int codeColumn = -1;
     int descriptionColumn = -1;
     for (int r = 0; r < rows.size() && headerAt < 0; r++) {
-      codeColumn = columnMentioning(rows.get(r), "hsn", "sac");
+      codeColumn = columnMentioning(rows.get(r), "hsn", "sac", "tariff");
       descriptionColumn = columnMentioning(rows.get(r), "description");
       if (codeColumn >= 0 && descriptionColumn >= 0) {
         headerAt = r;

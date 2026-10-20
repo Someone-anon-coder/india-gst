@@ -23,7 +23,12 @@ import java.util.Optional;
  *
  * <ul>
  *   <li>Section 10(1)(a): where goods move, the place of supply is where the movement ends, so an
- *       explicit delivery state wins.
+ *       explicit delivery state wins. This assumes the goods go to the recipient (or to a place the
+ *       recipient controls); for delivery to someone else on the recipient's direction ("bill to,
+ *       ship to") use {@link #forDirectedDelivery(StateCode, Gstin)}.
+ *   <li>Section 10(1)(b): where goods are delivered to another person on the direction of a third
+ *       person, the third person is deemed to have received them and the place of supply is that
+ *       person's principal place of business.
  *   <li>Section 10(1)(b) and section 12(2)(a) (services to a registered person): without a delivery
  *       state the place is the state in the buyer's GSTIN.
  *   <li>Section 10(1)(ca) (inserted from 1 October 2023): for an unregistered buyer with no
@@ -84,6 +89,21 @@ public record PlaceOfSupply(
    */
   public static PlaceOfSupply forRegisteredBuyer(StateCode supplierState, Gstin buyerGstin) {
     return resolve(supplierState, Optional.empty(), Optional.of(buyerGstin));
+  }
+
+  /**
+   * Resolves the place of supply when the buyer directs delivery to another person ("bill to, ship
+   * to"): the buyer is deemed to have received the goods, so the place of supply is the state of
+   * the buyer's GSTIN whatever the delivery state (IGST Act, 2017, section 10(1)(b); secondary
+   * source). The caller must decide whether a delivery really is on a third person's direction; the
+   * library cannot tell.
+   *
+   * @param supplierState the supplier's location
+   * @param buyerGstin the GSTIN of the person who directed the delivery
+   * @return the resolution
+   */
+  public static PlaceOfSupply forDirectedDelivery(StateCode supplierState, Gstin buyerGstin) {
+    return forRegisteredBuyer(supplierState, buyerGstin);
   }
 
   /**

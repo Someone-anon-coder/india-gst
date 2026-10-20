@@ -66,6 +66,20 @@ class HsnExcelLoaderUnitTest {
   }
 
   @Test
+  @DisplayName("a rate-master layout with 'Tariff item' and 'Description of Goods' is understood")
+  void shouldFindColumns_whenRateMasterLayout() throws IOException {
+    Path file =
+        XlsxFixture.write(
+            dir.resolve("rates.xlsx"),
+            List.of(
+                List.of(
+                    "Chapter", "Heading", "Tariff item", "Description of Goods", "IGST Rate (%)"),
+                List.of("84", "8471", "84713010", "Laptops", "18")));
+    assertThat(HsnExcelLoader.load(file).master().find("84713010").orElseThrow().description())
+        .isEqualTo("Laptops");
+  }
+
+  @Test
   @DisplayName("a workbook without a header row is refused")
   void shouldFail_whenNoHeaderRow() throws IOException {
     Path file =

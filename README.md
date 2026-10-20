@@ -75,6 +75,7 @@ All four examples run as tests (`ReadmeExamplesUnitTest`).
 | Rule | Source | Where it is used |
 |---|---|---|
 | Tax invoice particulars, 16-character serial number | CGST Rules, 2017, rule 46 (CBIC consolidation of 24 Sep 2021, [cbic-gst.gov.in](https://cbic-gst.gov.in/pdf/24092021-CGST-Rules-2017-Part-A-Rules.pdf)) | `DocumentKind.TAX_INVOICE`, `InvoiceNumber` |
+| Value of supply inclusive of tax (MRP): tax amount formula | CGST Rules, rule 35 (same consolidation) | `TaxCalculator` inclusive mode |
 | Bill of supply | CGST Rules, rule 49 (same consolidation) | `DocumentKind.BILL_OF_SUPPLY` |
 | Credit and debit note | CGST Rules, rule 53(1A) (same consolidation) | `DocumentKind.CREDIT_NOTE`, `DEBIT_NOTE` |
 | Delivery challan | CGST Rules, rule 55(1) (same consolidation) | `DocumentKind.DELIVERY_CHALLAN` |
@@ -86,19 +87,20 @@ All four examples run as tests (`ReadmeExamplesUnitTest`).
 
 ## What is and is not verified
 
-Verified against a primary source text read while building this version: rules 46, 46A, 49, 53, 55 (as of the 24 Sep 2021 consolidation) and notification 78/2020-CT. The GSTIN check algorithm reproduces two public sample GSTINs (`27AAPFU0939F1ZV`, `33AAACC1206D1ZN`) and rejects a mistyped one.
+Verified against a primary source text read while building this version: rules 46, 46A, 49, 53, 55 (as of the 24 Sep 2021 consolidation) and notification 78/2020-CT. Rule 35 (the tax-inclusive formula) was read in the same consolidation. The GSTIN check algorithm reproduces two public sample GSTINs (`27AAPFU0939F1ZV`, `33AAACC1206D1ZN`) and rejects a mistyped one.
 
 **Not verified against a primary source (treat as open):**
 
 - The official state code table (only secondary lists were reachable; the list used agrees across them). Codes 96 (Other Country) and 99 (Centre Jurisdiction) are not modelled.
 - IGST Act sections 7, 8, 10, 12, 13 and UTGST section 2(8): the CBIC pages could not be fetched (certificate error) so wording comes from secondary sites. Section 10(1)(ca) (unregistered recipients, from 1 Oct 2023) is taken from one of them.
 - That Jammu and Kashmir levies SGST (taken from the "State includes a union territory with legislature" definition).
+- Bill-to ship-to: `PlaceOfSupply.resolve` treats a delivery state as the place (section 10(1)(a)); delivery on the buyer's direction to a third person is section 10(1)(b) and needs `forDirectedDelivery`. The caller decides which applies.
 - That supplies to code 97 (Other Territory) are inter-State.
 - The special-category list in `StateCode.isSpecialCategory` (section 22 Explanation: Manipur, Mizoram, Nagaland, Tripura).
 - Amendments to rules 46, 49, 53, 55 after 24 Sep 2021 (secondary sources mention changes by notifications 51/2023-CT and 20/2024-CT); later notifications on HSN digits for e-invoice, e-way bill or GSTR-1 reporting.
 - The layout of the official HSN/SAC Excel master (the loader is tested on synthetic workbooks only).
 
-**Conventions, not law:** rounding each tax head per line to paise (half-up) and summing; for MRP lines, the odd paisa of GST goes to central tax and cess is capped at the tax part. See the 50 worked invoices in `src/test/resources/.../golden/Invoices/invoices.txt`; cases marked AMBIGUOUS show where the law does not choose.
+**Conventions, not law:** rounding each tax head per line to paise (half-up) and summing. For MRP lines each head follows rule 35 (`price x head rate / (100 + sum of rates)`), so central and state tax are always equal and the taxable value is the remainder of the price. See the 50 worked invoices in `src/test/resources/.../golden/Invoices/invoices.txt`; cases marked AMBIGUOUS show where the law does not choose.
 
 ## Behaviour you should know
 
@@ -118,7 +120,7 @@ result.master().find("8471");            // Optional<HsnEntry>
 result.skippedRows();                    // rows without a valid code
 ```
 
-Legacy `.xls` is not supported. The loader finds the header row by looking for a column mentioning "hsn" or "sac" and one mentioning "description".
+Legacy `.xls` is not supported. The loader finds the header row by looking for a column mentioning "hsn", "sac" or "tariff" and one mentioning "description".
 
 ## Development
 

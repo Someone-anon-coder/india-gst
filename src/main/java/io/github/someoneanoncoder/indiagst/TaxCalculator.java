@@ -33,11 +33,13 @@ import java.util.TreeMap;
  *       and state tax are each {@code taxable x (rate / 2)} rounded half-up to paise, so the two
  *       halves are always equal. Inter-State: integrated tax is {@code taxable x rate}. Cess is
  *       {@code taxable x cessRate}.
- *   <li><b>Tax-inclusive (MRP):</b> the discounted amount is the final price. Taxable value is
- *       {@code price x 100 / (100 + rate + cessRate)} rounded half-up; cess is its percentage
- *       (rounded half-up, never above the tax part); the remainder is GST, so the line always
- *       totals exactly the discounted price. On an intra-State line an odd paisa of GST goes to
- *       central tax.
+ *   <li><b>Tax-inclusive (MRP):</b> the discounted amount is the final price. Each head is {@code
+ *       price x head rate / (100 + sum of rates)} rounded half-up (CGST Rules, 2017, rule 35, read
+ *       from the CBIC consolidation of 24 September 2021: "Tax amount = (Value inclusive of taxes X
+ *       tax rate in % of IGST or, as the case may be, CGST, SGST or UTGST) / (100 + sum of tax
+ *       rates, as applicable, in %)"). Central and state tax therefore always match, and the
+ *       taxable value is what is left of the price, so the line totals the price exactly (it can
+ *       differ by a paisa from {@code price x 100 / (100 + rates)}).
  *   <li><b>Rounding:</b> each line is rounded to whole paise on its own and the invoice totals are
  *       the sums of those lines. No CGST Rule prescribes line-level or invoice-level rounding; this
  *       is the common billing-software practice and is flagged as a convention, not law.
@@ -90,23 +92,21 @@ public final class TaxCalculator {
   private static TaxLine inclusive(PlaceOfSupply place, TaxLineInput input) {
     Money price = input.netAmount();
     BigDecimal divisor = HUNDRED.add(input.gstRate()).add(input.cessRate());
-    long taxablePaise =
-        BigDecimal.valueOf(price.paise())
-            .multiply(HUNDRED)
-            .divide(divisor, 0, RoundingMode.HALF_UP)
-            .longValueExact();
-    Money taxable = Money.ofPaise(taxablePaise);
-    Money taxPart = price.minus(taxable);
-    Money cess = taxable.percent(input.cessRate(), RoundingMode.HALF_UP);
-    if (cess.compareTo(taxPart) > 0) {
-      cess = taxPart;
-    }
-    Money gst = taxPart.minus(cess);
+    Money cess = headOf(price, input.cessRate(), divisor);
     if (place.supplyType() == SupplyType.INTER_STATE) {
-      return new TaxLine(input, taxable, Money.ZERO, Money.ZERO, gst, cess);
+      Money igst = headOf(price, input.gstRate(), divisor);
+      Money taxable = price.minus(igst).minus(cess);
+      return new TaxLine(input, taxable, Money.ZERO, Money.ZERO, igst, cess);
     }
-    List<Money> halves = gst.allocate(1, 1);
-    return new TaxLine(input, taxable, halves.get(0), halves.get(1), Money.ZERO, cess);
+    Money each = headOf(price, input.gstRate().divide(TWO), divisor);
+    Money taxable = price.minus(each).minus(each).minus(cess);
+    return new TaxLine(input, taxable, each, each, Money.ZERO, cess);
+  }
+
+  private static Money headOf(Money price, BigDecimal rate, BigDecimal divisor) {
+    BigDecimal paise =
+        BigDecimal.valueOf(price.paise()).multiply(rate).divide(divisor, 0, RoundingMode.HALF_UP);
+    return Money.ofPaise(paise.longValueExact());
   }
 
   private static List<TaxRateSummary> summarise(List<TaxLine> lines) {
