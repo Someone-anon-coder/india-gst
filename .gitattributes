@@ -8,3 +8,4 @@ gradlew text eol=lf
 *.sql text eol=lf
 *.jar binary
 *.pdf binary
+*.txt text eol=lf

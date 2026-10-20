@@ -1,0 +1,27 @@
+/*
+ * File:      ArchTest.java
+ * Module:    india-gst-hsn-excel
+ * Layer:     testing
+ * Purpose:   Meta-annotation that tags a test as category 'arch'.
+ * Owns:      JUnit 5 tag "arch".
+ * Uses:      JUnit 5 @Tag.
+ * Used by:   Gradle test tasks.
+ * Not here:  Production code.
+ * Reuse:     Test only.
+ * Plan:      L2
+ */
+package io.github.someoneanoncoder.indiagst.hsnexcel.testing;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.junit.jupiter.api.Tag;
+
+/** Architecture rules. */
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Tag("arch")
+public @interface ArchTest {}
