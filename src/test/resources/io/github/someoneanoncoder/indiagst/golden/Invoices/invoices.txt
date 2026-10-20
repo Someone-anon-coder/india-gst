@@ -1,0 +1,785 @@
+# 50 worked GST invoices for TaxCalculator and PlaceOfSupply (plan L2-08).
+#
+# Status: DRAFT, awaiting owner review. Lines starting with '#' are the arithmetic worked out per line.
+# Provenance: inputs were chosen by hand to cover each rule. Expected figures were NOT produced by the
+# Java implementation; they were computed with a separate throwaway Decimal script and the key cases
+# re-checked by hand (case 01, 05, 31-34, 36, 37, 46). Review the cases flagged AMBIGUOUS/ASSUMPTION/UNVERIFIED.
+#
+# Conventions (all documented on TaxCalculator): each line rounded half-up to paise on its own;
+# intra-State: each half = taxable x rate/2 rounded; inclusive: taxable = price x 100 / (100 + gst + cess)
+# rounded half-up, cess = taxable x cess rounded and capped at the tax part, the rest is GST, an odd
+# paisa goes to central tax.
+#
+# Record format (pipe separated):
+#   case|<no>|<title>   supplier|<state code>   delivery|<state code>   buyer|<GSTIN>   mode|EXCLUSIVE or INCLUSIVE
+#   line|amount|discount|gst rate|cess rate
+#   expect-type|INTRA_STATE or INTER_STATE   expect-state-tax|SGST, UTGST or NOT_APPLICABLE
+#   expect-line|taxable|central|state|integrated|cess      (one per line, in order)
+#   expect-summary|gst rate|cess rate|taxable|central|state|integrated|cess      (ascending rate)
+#   expect-total|taxable|central|state|integrated|cess|grand total
+#   roundoff|mode|payable|adjustment
+case|01|Intra-State, one line at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|02|Intra-State, one line at 5%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|5|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 2.5% = 25.0 -> 25.00 each
+expect-line|1000.00|25.00|25.00|0.00|0.00
+expect-summary|5|0|1000.00|25.00|25.00|0.00|0.00
+expect-total|1000.00|25.00|25.00|0.00|0.00|1050.00
+end
+
+case|03|Intra-State, one line at 12%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|12|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 6% = 60 -> 60.00 each
+expect-line|1000.00|60.00|60.00|0.00|0.00
+expect-summary|12|0|1000.00|60.00|60.00|0.00|0.00
+expect-total|1000.00|60.00|60.00|0.00|0.00|1120.00
+end
+
+case|04|Intra-State, one line at 28%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|28|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 14% = 140 -> 140.00 each
+expect-line|1000.00|140.00|140.00|0.00|0.00
+expect-summary|28|0|1000.00|140.00|140.00|0.00|0.00
+expect-total|1000.00|140.00|140.00|0.00|0.00|1280.00
+end
+
+case|05|Intra-State, 50 paise at 18%: each half rounds up (4.5 paise to 5), so the halves total 10 paise against an exact 9
+# AMBIGUOUS: law does not say whether to round each half or the total; this library rounds each half
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|0.50|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 0.50 x 9% = 0.045 -> 0.05 each
+expect-line|0.50|0.05|0.05|0.00|0.00
+expect-summary|18|0|0.50|0.05|0.05|0.00|0.00
+expect-total|0.50|0.05|0.05|0.00|0.00|0.60
+end
+
+case|06|Intra-State, 99.99 at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|99.99|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 99.99 x 9% = 8.9991 -> 9.00 each
+expect-line|99.99|9.00|9.00|0.00|0.00
+expect-summary|18|0|99.99|9.00|9.00|0.00|0.00
+expect-total|99.99|9.00|9.00|0.00|0.00|117.99
+end
+
+case|07|Intra-State, two lines at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|333.33|0.00|18|0
+line|666.67|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 333.33 x 9% = 29.9997 -> 30.00 each
+# line 2: 666.67 x 9% = 60.0003 -> 60.00 each
+expect-line|333.33|30.00|30.00|0.00|0.00
+expect-line|666.67|60.00|60.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|08|Intra-State, three lines at 5%, 18%, 12%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|5|0
+line|1000.00|0.00|18|0
+line|1000.00|0.00|12|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 2.5% = 25.0 -> 25.00 each
+# line 2: 1000 x 9% = 90 -> 90.00 each
+# line 3: 1000 x 6% = 60 -> 60.00 each
+expect-line|1000.00|25.00|25.00|0.00|0.00
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-line|1000.00|60.00|60.00|0.00|0.00
+expect-summary|5|0|1000.00|25.00|25.00|0.00|0.00
+expect-summary|12|0|1000.00|60.00|60.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|3000.00|175.00|175.00|0.00|0.00|3350.00
+end
+
+case|09|Intra-State, lines 5%, 18%, 5% share one summary row
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|200.00|0.00|5|0
+line|300.00|0.00|18|0
+line|400.00|0.00|5|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 200 x 2.5% = 5.0 -> 5.00 each
+# line 2: 300 x 9% = 27 -> 27.00 each
+# line 3: 400 x 2.5% = 10.0 -> 10.00 each
+expect-line|200.00|5.00|5.00|0.00|0.00
+expect-line|300.00|27.00|27.00|0.00|0.00
+expect-line|400.00|10.00|10.00|0.00|0.00
+expect-summary|5|0|600.00|15.00|15.00|0.00|0.00
+expect-summary|18|0|300.00|27.00|27.00|0.00|0.00
+expect-total|900.00|42.00|42.00|0.00|0.00|984.00
+end
+
+case|10|Intra-State, discount 100 on 1000 at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|100.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 900 x 9% = 81 -> 81.00 each
+expect-line|900.00|81.00|81.00|0.00|0.00
+expect-summary|18|0|900.00|81.00|81.00|0.00|0.00
+expect-total|900.00|81.00|81.00|0.00|0.00|1062.00
+end
+
+case|11|Intra-State, discount equal to the amount leaves nothing to tax
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|750.00|750.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 0 x 9% = 0 -> 0.00 each
+expect-line|0.00|0.00|0.00|0.00|0.00
+expect-summary|18|0|0.00|0.00|0.00|0.00|0.00
+expect-total|0.00|0.00|0.00|0.00|0.00|0.00
+end
+
+case|12|Intra-State, nil rate 0%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|500.00|0.00|0|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 500 x 0% = 0 -> 0.00 each
+expect-line|500.00|0.00|0.00|0.00|0.00
+expect-summary|0|0|500.00|0.00|0.00|0.00|0.00
+expect-total|500.00|0.00|0.00|0.00|0.00|500.00
+end
+
+case|13|Intra-State, rate 0.25% (half is 0.125%)
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|100000.00|0.00|0.25|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100000 x 0.125% = 125.000 -> 125.00 each
+expect-line|100000.00|125.00|125.00|0.00|0.00
+expect-summary|0.25|0|100000.00|125.00|125.00|0.00|0.00
+expect-total|100000.00|125.00|125.00|0.00|0.00|100250.00
+end
+
+case|14|Intra-State, rate 3%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|123456.78|0.00|3|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 123456.78 x 1.5% = 1851.8517 -> 1851.85 each
+expect-line|123456.78|1851.85|1851.85|0.00|0.00
+expect-summary|3|0|123456.78|1851.85|1851.85|0.00|0.00
+expect-total|123456.78|1851.85|1851.85|0.00|0.00|127160.48
+end
+
+case|15|Intra-State, 28% with 12% cess
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|28|12
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# 1000 x 14% = 140 -> 140.00 each
+# cess 1000 x 12% = 120 -> 120.00
+expect-line|1000.00|140.00|140.00|0.00|120.00
+expect-summary|28|12|1000.00|140.00|140.00|0.00|120.00
+expect-total|1000.00|140.00|140.00|0.00|120.00|1400.00
+end
+
+case|16|Intra-State, cess only (0% GST, 5% cess)
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1000.00|0.00|0|5
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# 1000 x 0% = 0 -> 0.00 each
+# cess 1000 x 5% = 50 -> 50.00
+expect-line|1000.00|0.00|0.00|0.00|50.00
+expect-summary|0|5|1000.00|0.00|0.00|0.00|50.00
+expect-total|1000.00|0.00|0.00|0.00|50.00|1050.00
+end
+
+case|17|Chandigarh (union territory without legislature): central tax plus UTGST
+supplier|04
+delivery|04
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|UTGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|18|Delhi (union territory with legislature): central tax plus SGST
+supplier|07
+delivery|07
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|19|Registered buyer in the supplier's state, no delivery state
+supplier|27
+buyer|27AAPFU0939F1ZV
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|20|Legacy Daman and Diu (25) supplier delivering to 26 is intra-UT (UTGST)
+# ASSUMPTION: code 25 treated as 26 after the January 2020 merger
+supplier|25
+delivery|26
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|UTGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|21|Inter-State, 27 to 29, one line at 18%
+supplier|27
+delivery|29
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 18% = 180 -> 180.00
+expect-line|1000.00|0.00|0.00|180.00|0.00
+expect-summary|18|0|1000.00|0.00|0.00|180.00|0.00
+expect-total|1000.00|0.00|0.00|180.00|0.00|1180.00
+end
+
+case|22|Inter-State, registered buyer in Tamil Nadu, no delivery state
+supplier|27
+buyer|33AAACC1206D1ZN
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 18% = 180 -> 180.00
+expect-line|1000.00|0.00|0.00|180.00|0.00
+expect-summary|18|0|1000.00|0.00|0.00|180.00|0.00
+expect-total|1000.00|0.00|0.00|180.00|0.00|1180.00
+end
+
+case|23|Inter-State, lines at 5% and 18%
+supplier|27
+delivery|29
+mode|EXCLUSIVE
+line|1000.00|0.00|5|0
+line|1000.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 5% = 50 -> 50.00
+# line 2: 1000 x 18% = 180 -> 180.00
+expect-line|1000.00|0.00|0.00|50.00|0.00
+expect-line|1000.00|0.00|0.00|180.00|0.00
+expect-summary|5|0|1000.00|0.00|0.00|50.00|0.00
+expect-summary|18|0|1000.00|0.00|0.00|180.00|0.00
+expect-total|2000.00|0.00|0.00|230.00|0.00|2230.00
+end
+
+case|24|Inter-State with 12% cess at 28%
+supplier|27
+delivery|29
+mode|EXCLUSIVE
+line|1000.00|0.00|28|12
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# 1000 x 28% = 280 -> 280.00
+# cess 1000 x 12% = 120 -> 120.00
+expect-line|1000.00|0.00|0.00|280.00|120.00
+expect-summary|28|12|1000.00|0.00|0.00|280.00|120.00
+expect-total|1000.00|0.00|0.00|280.00|120.00|1400.00
+end
+
+case|25|Inter-State with discount 250 on 1250 at 12%
+supplier|27
+delivery|29
+mode|EXCLUSIVE
+line|1250.00|250.00|12|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 12% = 120 -> 120.00
+expect-line|1000.00|0.00|0.00|120.00|0.00
+expect-summary|12|0|1000.00|0.00|0.00|120.00|0.00
+expect-total|1000.00|0.00|0.00|120.00|0.00|1120.00
+end
+
+case|26|Inter-State, 50 paise at 18% (integrated tax is exactly 9 paise)
+supplier|27
+delivery|29
+mode|EXCLUSIVE
+line|0.50|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 0.50 x 18% = 0.09 -> 0.09
+expect-line|0.50|0.00|0.00|0.09|0.00
+expect-summary|18|0|0.50|0.00|0.00|0.09|0.00
+expect-total|0.50|0.00|0.00|0.09|0.00|0.59
+end
+
+case|27|Delivery to Other Territory (97) is inter-State
+# UNVERIFIED: Other Territory treated as inter-State
+supplier|27
+delivery|97
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1000 x 18% = 180 -> 180.00
+expect-line|1000.00|0.00|0.00|180.00|0.00
+expect-summary|18|0|1000.00|0.00|0.00|180.00|0.00
+expect-total|1000.00|0.00|0.00|180.00|0.00|1180.00
+end
+
+case|28|Unregistered buyer, no delivery state: place of supply is the supplier's state
+# Section 10(1)(ca) IGST Act (from 1 Oct 2023), secondary source
+supplier|27
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|29|Delivery state overrides the buyer GSTIN state (buyer in TN, delivery in MH)
+supplier|27
+delivery|27
+buyer|33AAACC1206D1ZN
+mode|EXCLUSIVE
+line|1000.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 9% = 90 -> 90.00 each
+expect-line|1000.00|90.00|90.00|0.00|0.00
+expect-summary|18|0|1000.00|90.00|90.00|0.00|0.00
+expect-total|1000.00|90.00|90.00|0.00|0.00|1180.00
+end
+
+case|30|Inclusive, MRP 118.00 at 18% splits exactly
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|118.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 118 x 100 / 118 = 100.000000 -> taxable 100.00; tax part 18.00; cess 0.00; GST 18.00
+expect-line|100.00|9.00|9.00|0.00|0.00
+expect-summary|18|0|100.00|9.00|9.00|0.00|0.00
+expect-total|100.00|9.00|9.00|0.00|0.00|118.00
+end
+
+case|31|Inclusive, MRP 100.00 at 18%: odd paisa of GST goes to central tax
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|100.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
+expect-line|84.75|7.63|7.62|0.00|0.00
+expect-summary|18|0|84.75|7.63|7.62|0.00|0.00
+expect-total|84.75|7.63|7.62|0.00|0.00|100.00
+end
+
+case|32|Inclusive, MRP 100.00 at 5%
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|100.00|0.00|5|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100 x 100 / 105 = 95.238095 -> taxable 95.24; tax part 4.76; cess 0.00; GST 4.76
+expect-line|95.24|2.38|2.38|0.00|0.00
+expect-summary|5|0|95.24|2.38|2.38|0.00|0.00
+expect-total|95.24|2.38|2.38|0.00|0.00|100.00
+end
+
+case|33|Inclusive, MRP 100.00 at 12%
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|100.00|0.00|12|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100 x 100 / 112 = 89.285714 -> taxable 89.29; tax part 10.71; cess 0.00; GST 10.71
+expect-line|89.29|5.36|5.35|0.00|0.00
+expect-summary|12|0|89.29|5.36|5.35|0.00|0.00
+expect-total|89.29|5.36|5.35|0.00|0.00|100.00
+end
+
+case|34|Inclusive, MRP 100.00 at 28%: taxable value 78.125 rounds half up
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|100.00|0.00|28|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100 x 100 / 128 = 78.125000 -> taxable 78.13; tax part 21.87; cess 0.00; GST 21.87
+expect-line|78.13|10.94|10.93|0.00|0.00
+expect-summary|28|0|78.13|10.94|10.93|0.00|0.00
+expect-total|78.13|10.94|10.93|0.00|0.00|100.00
+end
+
+case|35|Inclusive, inter-State MRP 100.00 at 18%
+supplier|27
+delivery|29
+mode|INCLUSIVE
+line|100.00|0.00|18|0
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
+expect-line|84.75|0.00|0.00|15.25|0.00
+expect-summary|18|0|84.75|0.00|0.00|15.25|0.00
+expect-total|84.75|0.00|0.00|15.25|0.00|100.00
+end
+
+case|36|Inclusive with discount 50 on MRP 500 at 18%
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|500.00|50.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 450 x 100 / 118 = 381.355932 -> taxable 381.36; tax part 68.64; cess 0.00; GST 68.64
+expect-line|381.36|34.32|34.32|0.00|0.00
+expect-summary|18|0|381.36|34.32|34.32|0.00|0.00
+expect-total|381.36|34.32|34.32|0.00|0.00|450.00
+end
+
+case|37|Inclusive with cess: MRP 1000 at 28% plus 12% cess
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|1000.00|0.00|28|12
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1000 x 100 / 140 = 714.285714 -> taxable 714.29; tax part 285.71; cess 85.71; GST 200.00
+expect-line|714.29|100.00|100.00|0.00|85.71
+expect-summary|28|12|714.29|100.00|100.00|0.00|85.71
+expect-total|714.29|100.00|100.00|0.00|85.71|1000.00
+end
+
+case|38|Inclusive, cess only: MRP 1050 with 5% cess
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|1050.00|0.00|0|5
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1050 x 100 / 105 = 1000.000000 -> taxable 1000.00; tax part 50.00; cess 50.00; GST 0.00
+expect-line|1000.00|0.00|0.00|0.00|50.00
+expect-summary|0|5|1000.00|0.00|0.00|0.00|50.00
+expect-total|1000.00|0.00|0.00|0.00|50.00|1050.00
+end
+
+case|39|Inclusive, 10 paise with 5% cess: cess is capped at the tax part
+# CONVENTION: cess never exceeds amount minus taxable value
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|0.10|0.00|0|5
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 0.10 x 100 / 105 = 0.095238 -> taxable 0.10; tax part 0.00; cess 0.00; GST 0.00
+expect-line|0.10|0.00|0.00|0.00|0.00
+expect-summary|0|5|0.10|0.00|0.00|0.00|0.00
+expect-total|0.10|0.00|0.00|0.00|0.00|0.10
+end
+
+case|40|Inclusive, three MRP lines at 18%, 5%, 12%
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|118.00|0.00|18|0
+line|105.00|0.00|5|0
+line|112.00|0.00|12|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 118 x 100 / 118 = 100.000000 -> taxable 100.00; tax part 18.00; cess 0.00; GST 18.00
+# line 2: 105 x 100 / 105 = 100.000000 -> taxable 100.00; tax part 5.00; cess 0.00; GST 5.00
+# line 3: 112 x 100 / 112 = 100.000000 -> taxable 100.00; tax part 12.00; cess 0.00; GST 12.00
+expect-line|100.00|9.00|9.00|0.00|0.00
+expect-line|100.00|2.50|2.50|0.00|0.00
+expect-line|100.00|6.00|6.00|0.00|0.00
+expect-summary|5|0|100.00|2.50|2.50|0.00|0.00
+expect-summary|12|0|100.00|6.00|6.00|0.00|0.00
+expect-summary|18|0|100.00|9.00|9.00|0.00|0.00
+expect-total|300.00|17.50|17.50|0.00|0.00|335.00
+end
+
+case|41|Inclusive, nil rate
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|250.00|0.00|0|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 250 x 100 / 100 = 250.000000 -> taxable 250.00; tax part 0.00; cess 0.00; GST 0.00
+expect-line|250.00|0.00|0.00|0.00|0.00
+expect-summary|0|0|250.00|0.00|0.00|0.00|0.00
+expect-total|250.00|0.00|0.00|0.00|0.00|250.00
+end
+
+case|42|Inclusive, one paisa at 18%
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|0.01|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 0.01 x 100 / 118 = 0.008475 -> taxable 0.01; tax part 0.00; cess 0.00; GST 0.00
+expect-line|0.01|0.00|0.00|0.00|0.00
+expect-summary|18|0|0.01|0.00|0.00|0.00|0.00
+expect-total|0.01|0.00|0.00|0.00|0.00|0.01
+end
+
+case|43|Round-off to nearest rupee: 1234.56 at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1234.56|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1234.56 x 9% = 111.1104 -> 111.11 each
+expect-line|1234.56|111.11|111.11|0.00|0.00
+expect-summary|18|0|1234.56|111.11|111.11|0.00|0.00
+expect-total|1234.56|111.11|111.11|0.00|0.00|1456.78
+roundoff|NEAREST_RUPEE|1457.00|0.22
+end
+
+case|44|Round-off to 50 paise: 1234.50 at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|1234.50|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 1234.50 x 9% = 111.105 -> 111.11 each
+expect-line|1234.50|111.11|111.11|0.00|0.00
+expect-summary|18|0|1234.50|111.11|111.11|0.00|0.00
+expect-total|1234.50|111.11|111.11|0.00|0.00|1456.72
+roundoff|NEAREST_50_PAISE|1456.50|-0.22
+end
+
+case|45|Round-off with a total ending exactly .50 rounds up
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|100.42|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100.42 x 9% = 9.0378 -> 9.04 each
+expect-line|100.42|9.04|9.04|0.00|0.00
+expect-summary|18|0|100.42|9.04|9.04|0.00|0.00
+expect-total|100.42|9.04|9.04|0.00|0.00|118.50
+roundoff|NEAREST_RUPEE|119.00|0.50
+end
+
+case|46|Ten lines of mixed rates with discount and round-off
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|125.50|0.00|5|0
+line|89.99|5.00|12|0
+line|1500.00|150.00|18|0
+line|42.25|0.00|5|0
+line|310.00|0.00|28|0
+line|77.77|0.00|12|0
+line|999.99|99.99|18|0
+line|15.00|0.00|0|0
+line|250.40|0.00|18|0
+line|60.00|10.00|5|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 125.50 x 2.5% = 3.1375 -> 3.14 each
+# line 2: 84.99 x 6% = 5.0994 -> 5.10 each
+# line 3: 1350 x 9% = 121.5 -> 121.50 each
+# line 4: 42.25 x 2.5% = 1.05625 -> 1.06 each
+# line 5: 310 x 14% = 43.4 -> 43.40 each
+# line 6: 77.77 x 6% = 4.6662 -> 4.67 each
+# line 7: 900.00 x 9% = 81.00 -> 81.00 each
+# line 8: 15 x 0% = 0 -> 0.00 each
+# line 9: 250.40 x 9% = 22.536 -> 22.54 each
+# line 10: 50 x 2.5% = 1.25 -> 1.25 each
+expect-line|125.50|3.14|3.14|0.00|0.00
+expect-line|84.99|5.10|5.10|0.00|0.00
+expect-line|1350.00|121.50|121.50|0.00|0.00
+expect-line|42.25|1.06|1.06|0.00|0.00
+expect-line|310.00|43.40|43.40|0.00|0.00
+expect-line|77.77|4.67|4.67|0.00|0.00
+expect-line|900.00|81.00|81.00|0.00|0.00
+expect-line|15.00|0.00|0.00|0.00|0.00
+expect-line|250.40|22.54|22.54|0.00|0.00
+expect-line|50.00|1.25|1.25|0.00|0.00
+expect-summary|0|0|15.00|0.00|0.00|0.00|0.00
+expect-summary|5|0|217.75|5.45|5.45|0.00|0.00
+expect-summary|12|0|162.76|9.77|9.77|0.00|0.00
+expect-summary|18|0|2500.40|225.04|225.04|0.00|0.00
+expect-summary|28|0|310.00|43.40|43.40|0.00|0.00
+expect-total|3205.91|283.66|283.66|0.00|0.00|3773.23
+roundoff|NEAREST_RUPEE|3773.00|-0.23
+end
+
+case|47|Twenty identical lines of 33.33 at 18%: tax is rounded per line (invoice-level rounding would give 119.99)
+# AMBIGUOUS: line-level versus invoice-level rounding is not prescribed
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+line|33.33|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# every line (20): 33.33 x 9% = 2.9997 -> 3.00 each
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-line|33.33|3.00|3.00|0.00|0.00
+expect-summary|18|0|666.60|60.00|60.00|0.00|0.00
+expect-total|666.60|60.00|60.00|0.00|0.00|786.60
+end
+
+case|48|Large invoice 99,99,999.99 at 18%
+supplier|27
+delivery|27
+mode|EXCLUSIVE
+line|9999999.99|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 9999999.99 x 9% = 899999.9991 -> 900000.00 each
+expect-line|9999999.99|900000.00|900000.00|0.00|0.00
+expect-summary|18|0|9999999.99|900000.00|900000.00|0.00|0.00
+expect-total|9999999.99|900000.00|900000.00|0.00|0.00|11799999.99
+end
+
+case|49|Inter-State inclusive with discount, 28% and 12% cess
+supplier|27
+delivery|29
+mode|INCLUSIVE
+line|2000.00|200.00|28|12
+expect-type|INTER_STATE
+expect-state-tax|NOT_APPLICABLE
+# line 1: 1800 x 100 / 140 = 1285.714286 -> taxable 1285.71; tax part 514.29; cess 154.29; GST 360.00
+expect-line|1285.71|0.00|0.00|360.00|154.29
+expect-summary|28|12|1285.71|0.00|0.00|360.00|154.29
+expect-total|1285.71|0.00|0.00|360.00|154.29|1800.00
+end
+
+case|50|Intra-State inclusive, two lines of the same rate give one summary row
+supplier|27
+delivery|27
+mode|INCLUSIVE
+line|100.00|0.00|18|0
+line|100.00|0.00|18|0
+expect-type|INTRA_STATE
+expect-state-tax|SGST
+# line 1: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
+# line 2: 100 x 100 / 118 = 84.745763 -> taxable 84.75; tax part 15.25; cess 0.00; GST 15.25
+expect-line|84.75|7.63|7.62|0.00|0.00
+expect-line|84.75|7.63|7.62|0.00|0.00
+expect-summary|18|0|169.50|15.26|15.24|0.00|0.00
+expect-total|169.50|15.26|15.24|0.00|0.00|200.00
+end
+
