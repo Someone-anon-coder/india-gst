@@ -15,6 +15,7 @@
 #   case|<no>|<title>   supplier|<state code>   delivery|<state code>   buyer|<GSTIN>   mode|EXCLUSIVE or INCLUSIVE
 #   directed|true   (buyer directed delivery to a third person: place of supply is the buyer's state)
 #   line|amount|discount|gst rate|cess rate
+#   expect-pos|<state code of the expected place of supply>
 #   expect-type|INTRA_STATE or INTER_STATE   expect-state-tax|SGST, UTGST or NOT_APPLICABLE
 #   expect-line|taxable|central|state|integrated|cess      (one per line, in order)
 #   expect-summary|gst rate|cess rate|taxable|central|state|integrated|cess      (ascending rate)
@@ -25,6 +26,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -38,6 +40,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|5|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 2.5% = 25.0 -> 25.00 each
@@ -51,6 +54,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|12|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 6% = 60 -> 60.00 each
@@ -64,6 +68,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|28|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 14% = 140 -> 140.00 each
@@ -78,6 +83,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|0.50|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 0.50 x 9% = 0.045 -> 0.05 each
@@ -91,6 +97,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|99.99|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 99.99 x 9% = 8.9991 -> 9.00 each
@@ -105,6 +112,7 @@ delivery|27
 mode|EXCLUSIVE
 line|333.33|0.00|18|0
 line|666.67|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 333.33 x 9% = 29.9997 -> 30.00 each
@@ -122,6 +130,7 @@ mode|EXCLUSIVE
 line|1000.00|0.00|5|0
 line|1000.00|0.00|18|0
 line|1000.00|0.00|12|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 2.5% = 25.0 -> 25.00 each
@@ -143,6 +152,7 @@ mode|EXCLUSIVE
 line|200.00|0.00|5|0
 line|300.00|0.00|18|0
 line|400.00|0.00|5|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 200 x 2.5% = 5.0 -> 5.00 each
@@ -161,6 +171,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|100.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 900 x 9% = 81 -> 81.00 each
@@ -174,6 +185,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|750.00|750.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 0 x 9% = 0 -> 0.00 each
@@ -187,6 +199,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|500.00|0.00|0|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 500 x 0% = 0 -> 0.00 each
@@ -200,6 +213,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|100000.00|0.00|0.25|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 100000 x 0.125% = 125.000 -> 125.00 each
@@ -213,6 +227,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|123456.78|0.00|3|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 123456.78 x 1.5% = 1851.8517 -> 1851.85 each
@@ -226,6 +241,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|28|12
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # 1000 x 14% = 140 -> 140.00 each
@@ -240,6 +256,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1000.00|0.00|0|5
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # 1000 x 0% = 0 -> 0.00 each
@@ -254,6 +271,7 @@ supplier|04
 delivery|04
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|04
 expect-type|INTRA_STATE
 expect-state-tax|UTGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -267,6 +285,7 @@ supplier|07
 delivery|07
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|07
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -280,6 +299,7 @@ supplier|27
 buyer|27AAPFU0939F1ZV
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -294,6 +314,7 @@ supplier|25
 delivery|26
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|26
 expect-type|INTRA_STATE
 expect-state-tax|UTGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -307,6 +328,7 @@ supplier|27
 delivery|29
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 18% = 180 -> 180.00
@@ -320,6 +342,7 @@ supplier|27
 buyer|33AAACC1206D1ZN
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|33
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 18% = 180 -> 180.00
@@ -334,6 +357,7 @@ delivery|29
 mode|EXCLUSIVE
 line|1000.00|0.00|5|0
 line|1000.00|0.00|18|0
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 5% = 50 -> 50.00
@@ -350,6 +374,7 @@ supplier|27
 delivery|29
 mode|EXCLUSIVE
 line|1000.00|0.00|28|12
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # 1000 x 28% = 280 -> 280.00
@@ -364,6 +389,7 @@ supplier|27
 delivery|29
 mode|EXCLUSIVE
 line|1250.00|250.00|12|0
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 12% = 120 -> 120.00
@@ -377,6 +403,7 @@ supplier|27
 delivery|29
 mode|EXCLUSIVE
 line|0.50|0.00|18|0
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 0.50 x 18% = 0.09 -> 0.09
@@ -391,6 +418,7 @@ supplier|27
 delivery|97
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|97
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 18% = 180 -> 180.00
@@ -404,6 +432,7 @@ case|28|Unregistered buyer, no delivery state: place of supply is the supplier's
 supplier|27
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -419,6 +448,7 @@ delivery|27
 buyer|33AAACC1206D1ZN
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1000 x 9% = 90 -> 90.00 each
@@ -432,6 +462,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|118.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 118 x 9% / 118% = 9.000000 -> 9.00 each; cess 0.00; taxable 118 - 18.00 - 0.00 = 100.00
@@ -445,6 +476,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 100 x 9% / 118% = 7.627119 -> 7.63 each; cess 0.00; taxable 100 - 15.26 - 0.00 = 84.74
@@ -458,6 +490,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|5|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 100 x 2.5% / 105% = 2.380952 -> 2.38 each; cess 0.00; taxable 100 - 4.76 - 0.00 = 95.24
@@ -471,6 +504,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|12|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 100 x 6% / 112% = 5.357143 -> 5.36 each; cess 0.00; taxable 100 - 10.72 - 0.00 = 89.28
@@ -484,6 +518,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|100.00|0.00|28|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 100 x 14% / 128% = 10.937500 -> 10.94 each; cess 0.00; taxable 100 - 21.88 - 0.00 = 78.12
@@ -497,6 +532,7 @@ supplier|27
 delivery|29
 mode|INCLUSIVE
 line|100.00|0.00|18|0
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: rule 35: 100 x 18% / 118% = 15.254237 -> 15.25; cess 0.00; taxable 100 - 15.25 - 0.00 = 84.75
@@ -510,6 +546,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|500.00|50.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 450 x 9% / 118% = 34.322034 -> 34.32 each; cess 0.00; taxable 450 - 68.64 - 0.00 = 381.36
@@ -523,6 +560,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|1000.00|0.00|28|12
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 1000 x 14% / 140% = 100.000000 -> 100.00 each; cess 85.71; taxable 1000 - 200.00 - 85.71 = 714.29
@@ -536,6 +574,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|1050.00|0.00|0|5
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 1050 x 0% / 105% = 0.000000 -> 0.00 each; cess 50.00; taxable 1050 - 0.00 - 50.00 = 1000.00
@@ -549,6 +588,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|0.10|0.00|0|5
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 0.10 x 0% / 105% = 0.000000 -> 0.00 each; cess 0.00; taxable 0.10 - 0.00 - 0.00 = 0.10
@@ -564,6 +604,7 @@ mode|INCLUSIVE
 line|118.00|0.00|18|0
 line|105.00|0.00|5|0
 line|112.00|0.00|12|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 118 x 9% / 118% = 9.000000 -> 9.00 each; cess 0.00; taxable 118 - 18.00 - 0.00 = 100.00
@@ -583,6 +624,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|250.00|0.00|0|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 250 x 0% / 100% = 0.000000 -> 0.00 each; cess 0.00; taxable 250 - 0.00 - 0.00 = 250.00
@@ -596,6 +638,7 @@ supplier|27
 delivery|27
 mode|INCLUSIVE
 line|0.01|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: rule 35: 0.01 x 9% / 118% = 0.000763 -> 0.00 each; cess 0.00; taxable 0.01 - 0.00 - 0.00 = 0.01
@@ -609,6 +652,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1234.56|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1234.56 x 9% = 111.1104 -> 111.11 each
@@ -623,6 +667,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|1234.50|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 1234.50 x 9% = 111.105 -> 111.11 each
@@ -637,6 +682,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|100.42|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 100.42 x 9% = 9.0378 -> 9.04 each
@@ -660,6 +706,7 @@ line|999.99|99.99|18|0
 line|15.00|0.00|0|0
 line|250.40|0.00|18|0
 line|60.00|10.00|5|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 125.50 x 2.5% = 3.1375 -> 3.14 each
@@ -716,6 +763,7 @@ line|33.33|0.00|18|0
 line|33.33|0.00|18|0
 line|33.33|0.00|18|0
 line|33.33|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # every line (20): 33.33 x 9% = 2.9997 -> 3.00 each
@@ -748,6 +796,7 @@ supplier|27
 delivery|27
 mode|EXCLUSIVE
 line|9999999.99|0.00|18|0
+expect-pos|27
 expect-type|INTRA_STATE
 expect-state-tax|SGST
 # line 1: 9999999.99 x 9% = 899999.9991 -> 900000.00 each
@@ -761,6 +810,7 @@ supplier|27
 delivery|29
 mode|INCLUSIVE
 line|2000.00|200.00|28|12
+expect-pos|29
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: rule 35: 1800 x 28% / 140% = 360.000000 -> 360.00; cess 154.29; taxable 1800 - 360.00 - 154.29 = 1285.71
@@ -777,6 +827,7 @@ buyer|33AAACC1206D1ZN
 directed|true
 mode|EXCLUSIVE
 line|1000.00|0.00|18|0
+expect-pos|33
 expect-type|INTER_STATE
 expect-state-tax|NOT_APPLICABLE
 # line 1: 1000 x 18% = 180 -> 180.00

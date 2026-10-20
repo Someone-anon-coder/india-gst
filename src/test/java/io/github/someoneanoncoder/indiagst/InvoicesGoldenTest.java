@@ -47,6 +47,7 @@ class InvoicesGoldenTest {
     final List<String[]> expectedLines = new ArrayList<>();
     final List<String[]> expectedSummary = new ArrayList<>();
     String type;
+    String pos;
     String stateTax;
     String[] total;
     String[] roundOff;
@@ -86,6 +87,7 @@ class InvoicesGoldenTest {
       case "directed" -> c.directed = Boolean.parseBoolean(f[1]);
       case "mode" -> c.mode = f[1];
       case "line" -> c.lines.add(f);
+      case "expect-pos" -> c.pos = f[1];
       case "expect-type" -> c.type = f[1];
       case "expect-state-tax" -> c.stateTax = f[1];
       case "expect-line" -> c.expectedLines.add(f);
@@ -142,6 +144,7 @@ class InvoicesGoldenTest {
     for (Case c : cases()) {
       TaxResult r = run(c);
       String id = "case " + c.id + " " + c.title;
+      assertThat(r.placeOfSupply().placeOfSupplyState().code()).as(id).isEqualTo(c.pos);
       assertThat(r.placeOfSupply().supplyType().name()).as(id).isEqualTo(c.type);
       assertThat(r.placeOfSupply().stateTaxKind().name()).as(id).isEqualTo(c.stateTax);
       assertThat(r.lines()).as(id).hasSameSizeAs(c.expectedLines);
