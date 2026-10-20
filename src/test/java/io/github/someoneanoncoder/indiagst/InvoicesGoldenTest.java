@@ -63,7 +63,7 @@ class InvoicesGoldenTest {
       assertThat(in).as("golden file").isNotNull();
       List<Case> cases = new ArrayList<>();
       Case current = null;
-      for (String text : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+      for (String text : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
         if (text.isBlank() || text.startsWith("#")) {
           continue;
         }
