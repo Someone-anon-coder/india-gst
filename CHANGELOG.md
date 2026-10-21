@@ -4,6 +4,11 @@ All notable changes are listed here. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+### Fixed
+- README install snippet: correct JitPack coordinates for the multi-module build.
+
+## [0.1.0] - 2026-10-20
+
 ### Added
 - `Gstin` with Luhn mod-36 check character, PAN and state extraction, generation [L2-01].
 - `StateCode` (all States and union territories, 97 Other Territory, legacy 25 and 28), `StateTaxKind` [L2-02].

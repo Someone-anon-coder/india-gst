@@ -5,20 +5,22 @@ GST rules for Indian billing software in plain Java: validate a **GSTIN** (inclu
 > **Not tax advice; rules as of 20 October 2026; verify against CBIC notifications.**
 > GST law changes by notification. This library encodes rules read from the sources listed below; several could only be checked against secondary reproductions (see "What is and is not verified"). Check every rule against the current CBIC text before relying on it for filing or compliance, and ask your chartered accountant about edge cases.
 
-Status: `0.1.0` (under development until released). Depends on [`india-money`](https://github.com/Someone-anon-coder/india-money) for `Money` (exposed transitively); no other runtime dependency.
+Status: `0.1.0`. Depends on [`india-money`](https://github.com/Someone-anon-coder/india-money) for `Money` (exposed transitively); no other runtime dependency.
 
 ## Install
 
-JitPack (first release):
+JitPack (first release). This is a multi-module build, so JitPack publishes under the group `com.github.Someone-anon-coder.india-gst`:
 
 ```kotlin
 repositories { maven("https://jitpack.io") }
 dependencies {
-    implementation("com.github.Someone-anon-coder:india-gst:v0.1.0")
+    implementation("com.github.Someone-anon-coder.india-gst:india-gst:v0.1.0")
     // optional: load the official HSN/SAC master from .xlsx (JDK only, no third-party jars)
-    // implementation("com.github.Someone-anon-coder.india-gst:hsn-excel:v0.1.0")   // coordinates confirmed after the first JitPack build
+    // implementation("com.github.Someone-anon-coder.india-gst:hsn-excel:v0.1.0")
 }
 ```
+
+Do not use `com.github.Someone-anon-coder:india-gst`: that root coordinate is an aggregate that also pulls in `hsn-excel`. If you restrict the JitPack repository by group, allow both `com.github.Someone-anon-coder` (for `india-money`, a transitive dependency) and `com.github.Someone-anon-coder.india-gst`.
 
 Maven Central coordinates `io.github.someone-anon-coder:india-gst` follow before v1.0.0.
 
